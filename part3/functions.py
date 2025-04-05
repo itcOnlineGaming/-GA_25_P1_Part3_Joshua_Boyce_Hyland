@@ -77,3 +77,26 @@ def get_avg_sessions_per_month():
     median_session_times['AvgSessionsPerUser'] =median_session_times['TotalSessions'] / median_session_times['UniqueUsers']
 
     return median_session_times
+
+def get_progress_speed():
+    file = pd.read_csv("data/study_prompt_answered.csv")
+    file["Time_utc"] = pd.to_datetime(file["Time_utc"])
+    file = file.sort_values(by=["pid", "Time_utc"])
+    file["LevelProgressionAmount"] = pd.to_numeric(file["LevelProgressionAmount"], errors='coerce')
+
+    # Debug: Check if column exists before calculating diff
+    if "LevelProgressionAmount" not in file.columns:
+        raise KeyError("Column 'LevelProgressionAmount' is missing!")
+
+    # Calculate diff
+    file["LevelProgressionAmount_diff"] = file.groupby("pid")["LevelProgressionAmount"].diff()
+
+    # Debug: Confirm it exists
+    if "LevelProgressionAmount_diff" not in file.columns:
+        raise KeyError("Failed to create 'LevelProgressionAmount_diff'!")
+
+    # Filter out NaNs and negative/zero progression
+    progress_diffs = file.dropna(subset=["LevelProgressionAmount_diff"])
+    progress_diffs = progress_diffs[progress_diffs["LevelProgressionAmount_diff"] > 0]
+
+    return progress_diffs
