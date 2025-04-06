@@ -80,14 +80,22 @@ def get_avg_sessions_per_month():
 
 def get_average_progress_speed():
     file = pd.read_csv("data/exited_game.csv")
-    df = df.dropna(subset=['LevelProgressionAmount', 'CurrentSessionLength'])
-    df = df[df['CurrentSessionLength'] > 0]
+    file = file.dropna(subset=['LevelProgressionAmount', 'CurrentSessionLength'])
+    file = file[file['CurrentSessionLength'] > 0]
 
     
-    df['ProgressPerMinute'] = df['LevelProgressionAmount'] / df['CurrentSessionLength'] # progress rate
+    file['ProgressPerMinute'] = file['LevelProgressionAmount'] / file['CurrentSessionLength'] # progress rate
 
-    avg_progress_rate = df.groupby('CurrentJobName')['ProgressPerMinute'].mean().sort_values() # average progress per minute by level
+    avg_progress_rate = file.groupby('CurrentJobName')['ProgressPerMinute'].mean().sort_values() # average progress per minute by level
    
     return avg_progress_rate
 
 
+def get_login_times():
+    file = pd.read_csv("data/player_logged_in.csv")
+    file['Time'] = pd.to_datetime(file['Time'])
+    file['Hour'] = file['Time'].dt.hour
+
+    login_times = file['Hour'].value_counts().sort_index()
+
+    return login_times
