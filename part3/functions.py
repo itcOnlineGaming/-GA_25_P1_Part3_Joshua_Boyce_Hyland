@@ -78,25 +78,16 @@ def get_avg_sessions_per_month():
 
     return median_session_times
 
-def get_progress_speed():
-    file = pd.read_csv("data/study_prompt_answered.csv")
-    file["Time_utc"] = pd.to_datetime(file["Time_utc"])
-    file = file.sort_values(by=["pid", "Time_utc"])
-    file["LevelProgressionAmount"] = pd.to_numeric(file["LevelProgressionAmount"], errors='coerce')
+def get_average_progress_speed():
+    file = pd.read_csv("data/exited_game.csv")
+    df = df.dropna(subset=['LevelProgressionAmount', 'CurrentSessionLength'])
+    df = df[df['CurrentSessionLength'] > 0]
 
-    # Debug: Check if column exists before calculating diff
-    if "LevelProgressionAmount" not in file.columns:
-        raise KeyError("Column 'LevelProgressionAmount' is missing!")
+    
+    df['ProgressPerMinute'] = df['LevelProgressionAmount'] / df['CurrentSessionLength'] # progress rate
 
-    # Calculate diff
-    file["LevelProgressionAmount_diff"] = file.groupby("pid")["LevelProgressionAmount"].diff()
+    avg_progress_rate = df.groupby('CurrentJobName')['ProgressPerMinute'].mean().sort_values() # average progress per minute by level
+   
+    return avg_progress_rate
 
-    # Debug: Confirm it exists
-    if "LevelProgressionAmount_diff" not in file.columns:
-        raise KeyError("Failed to create 'LevelProgressionAmount_diff'!")
 
-    # Filter out NaNs and negative/zero progression
-    progress_diffs = file.dropna(subset=["LevelProgressionAmount_diff"])
-    progress_diffs = progress_diffs[progress_diffs["LevelProgressionAmount_diff"] > 0]
-
-    return progress_diffs
