@@ -99,3 +99,16 @@ def get_login_times():
     login_times = file['Hour'].value_counts().sort_index()
 
     return login_times
+
+
+def get_daily_logins():
+
+    file = pd.read_csv("data/player_logged_in.csv")
+    file['Time'] = pd.to_datetime(file['Time'])
+    file['Day'] = file['Time'].dt.day_name() # get day of week
+    day_counts = file['Day'].value_counts()
+
+    ordered_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    day_counts = day_counts.reindex(ordered_days)
+    
+    return day_counts
